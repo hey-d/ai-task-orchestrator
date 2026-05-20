@@ -3,58 +3,51 @@ const Task = require("../models/Task");
 
 exports.analyzeTask = async (req, res) => {
   try {
-    const { taskDesc } = req.body;
+    const { rawText, userId } = req.body;
 
-    const prompt = `Analyze the following task ${taskDesc} and provide a detailed breakdown of what should be the priority of this task in the  user's timetable with the category that it will fit in and the estimated time it will take to complete the task. remeber to provide the output in a JSON format with the following keys: 
-        "title": (string)
-        "priority": (high, medium, low)
-        "category": (work, personal, health, leisure, other)
-        "estimatedTime: (in hours and minutes whatever suits you best for task, if it is under and hour give me minutes otherwise hours and minutes)
-        example output: 
-        {
-            "title": "Complete project report",
-            "priority": "high",
-            "category": "work",
-            "estimatedTime": "2 hours 30 minutes"
-        }`;
+    const prompt = `
+      Extract task details from this text: "${rawText}".
+      Return ONLY a JSON object with these keys:
+      "title": (string), 
+      "priority": high | medium | low, 
+      "category": (string like 'Work', 'Personal', etc.)
+      "estimatedTime": (string like '30 mins', '2 hours', etc.)
+      
+      Example output: {"title": "Buy groceries", "priority": "medium", "category": "Personal", "estimatedTime": "30 mins"}
+    `;
+
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    const text = response.text();
-
-    const cleanJson = text.replace(/```json|```/g, "").trim();
-
-    let parsed;
-
-    try {
-      parsed = JSON.parse(cleanJson);
-    } catch (err) {
-      console.error("JSON parse failed:", err);
-      parsed = { raw: cleanJson }; // fallback
-    }
+    const cleanJson = response
+      .text()
+      .replace(/```json|```/g, "")
+      .trim();
+    const aiResult = JSON.parse(cleanJson);
 
     const newTask = new Task({
-      title: parsed.title,
-      priority: parsed.priority,
-      category: parsed.category,
-      estimatedTime: parsed.estimatedTime,
-      rawInput: taskDesc,
+      userId: userId,
+      title: aiResult.title,
+      priority: aiResult.priority,
+      category: aiResult.category,
+      estimatedTime: aiResult.estimatedTime,
+      rawInput: rawText,
     });
     await newTask.save();
 
     res.status(201).json(newTask);
   } catch (error) {
-    console.log(error);
     res.status(500).json({ error: "failed to process task" });
   }
 };
 
-exports.getTasks = async (req, res)=>{
-  try{
-    const tasks = await Task.find().sort({createdAt: -1});
-    res.json(tasks);
+
+exports.getTasks = async (req, res) => {
+  try {
+    console.log(req.query);
+    const {userId} = req.query;
+    const tasks = await Task.find({userId}).sort({ createdAt: -1 });
+    res.status(200).json(tasks);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch tasks" });
   }
-  catch(error){
-    console.error(error);
-    res.status(500).json({ error: "failed to fetch tasks" });
-  }
-}
+};
