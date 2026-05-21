@@ -1,9 +1,12 @@
 const model = require("../config/aiConfig");
 const Task = require("../models/Task");
+const dotenv = require("dotenv");
+dotenv.config();
 
 exports.analyzeTask = async (req, res) => {
   try {
     const { rawText, userId } = req.body;
+    console.log(process.env.GEMINI_API_KEY);
 
     const prompt = `
       Extract task details from this text: "${rawText}".
@@ -37,16 +40,16 @@ exports.analyzeTask = async (req, res) => {
 
     res.status(201).json(newTask);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: "failed to process task" });
   }
 };
 
-
 exports.getTasks = async (req, res) => {
   try {
     console.log(req.query);
-    const {userId} = req.query;
-    const tasks = await Task.find({userId}).sort({ createdAt: -1 });
+    const { userId } = req.query;
+    const tasks = await Task.find({ userId }).sort({ createdAt: -1 });
     res.status(200).json(tasks);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch tasks" });
