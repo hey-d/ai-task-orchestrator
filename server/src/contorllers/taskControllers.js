@@ -18,6 +18,7 @@ exports.analyzeTask = async (req, res) => {
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
+    console.log("RAW AI RESPONSE:", response.text());
     const cleanJson = response
       .text()
       .replace(/```json|```/g, "")
