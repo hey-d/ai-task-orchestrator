@@ -22,7 +22,7 @@ function App() {
   }, []);
 
   const fetchTasks = async ()=>{
-    const res = await axios.get("http://localhost:5000/api/tasks");
+    const res = await axios.get("https://ai-task-orchestrator-backend.onrender.com/api/tasks");
     setTasks(res.data);
   }
 
