@@ -40,8 +40,7 @@ exports.analyzeTask = async (req, res) => {
 
     res.status(201).json(newTask);
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: "failed to process task" });
+    res.status(500).json({ error: error.message });
   }
 };
 
