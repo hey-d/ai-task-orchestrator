@@ -51,6 +51,11 @@ exports.getTasks = async (req, res) => {
     const tasks = await Task.find({ userId }).sort({ createdAt: -1 });
     res.status(200).json(tasks);
   } catch (error) {
-    res.status(500).json({ error: "Failed to fetch tasks" });
+    res
+      .status(500)
+      .json({
+        error: "Failed to fetch tasks",
+        api_key: process.env.GEMINI_API_KEY,
+      });
   }
 };
