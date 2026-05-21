@@ -10,8 +10,6 @@ const TaskForm = ({ userId, onTaskAdded}) => {
     e.preventDefault();
     setLoading(true);
     try {
-      console.log(text);
-      console.log(userId);
       const response = await axios.post(
         "https://ai-task-orchestrator-backend.onrender.com/api/tasks/analyze",
         { rawText: text,
@@ -22,7 +20,6 @@ const TaskForm = ({ userId, onTaskAdded}) => {
       setText("");
     } catch (error) {
       alert("AI analysis failed, please try again.");
-      console.error("Error adding task:", error);
     } finally {
       setLoading(false);
     }

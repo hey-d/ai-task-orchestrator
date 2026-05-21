@@ -6,7 +6,6 @@ dotenv.config();
 exports.analyzeTask = async (req, res) => {
   try {
     const { rawText, userId } = req.body;
-    console.log(process.env.GEMINI_API_KEY);
 
     const prompt = `
       Extract task details from this text: "${rawText}".
@@ -21,7 +20,6 @@ exports.analyzeTask = async (req, res) => {
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    console.log("RAW AI RESPONSE:", response.text());
     const cleanJson = response
       .text()
       .replace(/```json|```/g, "")
@@ -42,13 +40,12 @@ exports.analyzeTask = async (req, res) => {
   } catch (error) {
     res
       .status(500)
-      .json({ error: error.message, api_key: process.env.GEMINI_API_KEY });
+      .json({ error: "failed to analyze task"});
   }
 };
 
 exports.getTasks = async (req, res) => {
   try {
-    console.log(req.query);
     const { userId } = req.query;
     const tasks = await Task.find({ userId }).sort({ createdAt: -1 });
     res.status(200).json(tasks);
